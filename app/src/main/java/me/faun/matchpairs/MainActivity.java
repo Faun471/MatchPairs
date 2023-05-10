@@ -11,12 +11,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import me.faun.matchpairs.customviews.IgasPlayingCard;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
     private final ArrayList<IgasPlayingCard> clickedCards = new ArrayList<>();
     private boolean isFlipping = false;
     private GridLayout gridLayout;
+    private final String[] cardNames = {"a", "b", "c"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
 
         gridLayout = findViewById(R.id.gridLayout);
 
-        addCardsToGrid(3, 3);
+        addCardsToGrid(4, 4);
 
         gridLayout.post(this::showCards);
     }
@@ -89,12 +91,13 @@ public class MainActivity extends AppCompatActivity {
 
             // Add the cards to the grid
             for (int i = 0; i < finalTotalCards; i++) {
-                int row = i / columnCount;
-                int column = i % columnCount;
                 IgasPlayingCard card = new IgasPlayingCard(this);
 
-                // Set the card's name, gravity and background color
-                card.setName((row + 1) + ", " + (column + 1));
+                // Randomly select a name from the cardNames array
+                String cardName = getRandomCardName();
+                card.setName(cardName);
+
+                // Set the card's name, gravity, and background color
                 card.setGravity(Gravity.CENTER);
                 card.setBackgroundColor(Color.WHITE);
 
@@ -111,6 +114,13 @@ public class MainActivity extends AppCompatActivity {
                 gridLayout.addView(card);
             }
         });
+    }
+
+    // Method to randomly select a name from the cardNames array
+    private String getRandomCardName() {
+        Random random = new Random();
+        int index = random.nextInt(cardNames.length);
+        return cardNames[index];
     }
 
     public void onClick(View view) {
@@ -154,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
                 clickedCards.forEach(IgasPlayingCard::flip);
                 clickedCards.clear();
                 isFlipping = false;
-            }, 1500);
+            }, 1250);
 
             return;
         }

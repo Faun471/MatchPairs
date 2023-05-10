@@ -1,14 +1,12 @@
 package me.faun.matchpairs.customviews;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
+import android.animation.*;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.util.AttributeSet;
+import android.view.animation.OvershootInterpolator;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.content.res.ResourcesCompat;
 import me.faun.matchpairs.R;
@@ -64,9 +62,19 @@ public class IgasPlayingCard extends AppCompatButton {
     public void flip() {
         mIsOn = !mIsOn;
 
+        // create an ObjectAnimator for scaling the card
+        ObjectAnimator scale = ObjectAnimator.ofPropertyValuesHolder(this,
+                PropertyValuesHolder.ofFloat("scaleX", 1f, 0.8f, 1f),
+                PropertyValuesHolder.ofFloat("scaleY", 1f, 0.8f, 1f)
+        );
+        scale.setDuration(250);
+        scale.setInterpolator(new OvershootInterpolator());
+
         // create two ObjectAnimator instances for flipping the card
         ObjectAnimator flipOut = ObjectAnimator.ofFloat(this, "rotationY", 0f, 90f);
         ObjectAnimator flipIn = ObjectAnimator.ofFloat(this, "rotationY", -90f, 0f);
+        flipIn.setDuration(200);
+        flipOut.setDuration(200);
 
         // set the drawable resource for the switch after the flip animation ends
         flipOut.addListener(new AnimatorListenerAdapter() {
@@ -77,10 +85,11 @@ public class IgasPlayingCard extends AppCompatButton {
             }
         });
 
-        // play the flip animation
-        AnimatorSet flip = new AnimatorSet();
-        flip.playSequentially(flipOut, flipIn);
-        flip.start();
+        // play the animations together
+        AnimatorSet animSet = new AnimatorSet();
+        animSet.playSequentially(scale, flipOut);
+        animSet.playSequentially(flipOut, flipIn);
+        animSet.start();
     }
 
     public String getName() {
