@@ -3,5 +3,6 @@
     <declare-styleable name="IgasPlayingCard">
         <attr name="switchOnImage" format="reference" />
         <attr name="switchOffImage" format="reference" />
+        <attr name="cornerRadius" format="dimension" />
     </declare-styleable>
 </resources>

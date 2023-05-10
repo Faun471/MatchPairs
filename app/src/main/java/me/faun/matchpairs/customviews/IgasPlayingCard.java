@@ -6,15 +6,18 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.util.AttributeSet;
-import androidx.appcompat.widget.AppCompatImageButton;
+import androidx.appcompat.widget.AppCompatButton;
+import androidx.core.content.res.ResourcesCompat;
 import me.faun.matchpairs.R;
 
-public class IgasPlayingCard extends AppCompatImageButton {
+public class IgasPlayingCard extends AppCompatButton {
     private boolean mIsOn = false;
     private String name;
-    private int mSwitchOnImage;
-    private int mSwitchOffImage;
+    private Drawable mSwitchOnImage;
+    private Drawable mSwitchOffImage;
 
     public IgasPlayingCard(Context context) {
         super(context);
@@ -34,33 +37,42 @@ public class IgasPlayingCard extends AppCompatImageButton {
     private void init(AttributeSet attrs) {
         if (attrs != null) {
             TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.IgasPlayingCard, 0, 0);
-            mSwitchOnImage = a.getResourceId(R.styleable.IgasPlayingCard_switchOnImage, R.drawable.ic_launcher_foreground);
-            mSwitchOffImage = a.getResourceId(R.styleable.IgasPlayingCard_switchOffImage, R.drawable.ic_launcher_background);
+            mSwitchOnImage = a.getDrawable(R.styleable.IgasPlayingCard_switchOnImage);
+            mSwitchOffImage = a.getDrawable(R.styleable.IgasPlayingCard_switchOffImage);
+            // read corner radius attribute, default to 0
+            float cornerRadius = a.getDimension(R.styleable.IgasPlayingCard_cornerRadius, 0);
             a.recycle();
+
+            // create background drawable with rounded corners
+            GradientDrawable background = new GradientDrawable();
+            background.setShape(GradientDrawable.RECTANGLE);
+            background.setCornerRadius(cornerRadius);
+            setBackground(background);
         } else {
             // default values
-            mSwitchOnImage = R.drawable.ic_launcher_foreground;
-            mSwitchOffImage = R.drawable.ic_launcher_background;
+            mSwitchOnImage = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_launcher_foreground, null);
+            mSwitchOffImage = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_launcher_background, null);
         }
 
-        // set the initial image resource for the switch
-        setImageResource(mSwitchOffImage);
+        // set the initial drawable resource for the switch
+        setForeground(mSwitchOffImage);
 
-        setOnClickListener(view -> toggle());
+        setOnClickListener(view -> flip());
     }
 
-    public void toggle() {
+
+    public void flip() {
         mIsOn = !mIsOn;
 
         // create two ObjectAnimator instances for flipping the card
         ObjectAnimator flipOut = ObjectAnimator.ofFloat(this, "rotationY", 0f, 90f);
         ObjectAnimator flipIn = ObjectAnimator.ofFloat(this, "rotationY", -90f, 0f);
 
-        // set the image resource for the switch after the flip animation ends
+        // set the drawable resource for the switch after the flip animation ends
         flipOut.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                setImageResource(mIsOn ? mSwitchOnImage : mSwitchOffImage);
+                setForeground(mIsOn ? mSwitchOnImage : mSwitchOffImage);
                 flipIn.start();
             }
         });
