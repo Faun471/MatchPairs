@@ -5,24 +5,19 @@ import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.GridLayout;
-import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-
 import me.faun.matchpairs.customviews.IgasPlayingCard;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Random;
 
 public class GameTime extends AppCompatActivity {
-
     private final ArrayList<IgasPlayingCard> clickedCards = new ArrayList<>();
-    private boolean isFlipping = false;
+    private boolean isRestarting = false, isFlipping = false;
     private GridLayout gridLayout;
-    private final String[] names = {"a", "b"};
-    
-    private final int row, column;
+    private final String[] names = {"abigail", "harvey", "elliott"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,11 +35,7 @@ public class GameTime extends AppCompatActivity {
         });
     }
 
-    /*
-     * This will store all the cards in an ArrayList and shuffle it to change
-     * the cards' order.
-     */
-    public void shuffleGridLayout() {
+    private ArrayList<IgasPlayingCard> getCards() {
         ArrayList<IgasPlayingCard> cards = new ArrayList<>();
         for (int i = 0; i < gridLayout.getChildCount(); i++) {
             View view = gridLayout.getChildAt(i);
@@ -53,6 +44,16 @@ public class GameTime extends AppCompatActivity {
             }
         }
 
+        return cards;
+    }
+
+    /*
+     * This will store all the cards in an ArrayList and shuffle it to change
+     * the cards' order.
+     */
+    public void shuffleGridLayout() {
+        // get all cards from the grid layout
+        ArrayList<IgasPlayingCard> cards = getCards();
         gridLayout.removeAllViews();
 
         Collections.shuffle(cards);
@@ -68,24 +69,25 @@ public class GameTime extends AppCompatActivity {
      */
     public void showCards() {
         // get all cards from the grid layout
-        ArrayList<IgasPlayingCard> cards = new ArrayList<>();
-        for (int i = 0; i < gridLayout.getChildCount(); i++) {
-            View view = gridLayout.getChildAt(i);
-            if (view instanceof IgasPlayingCard card) {
-                cards.add(card);
-            }
-        }
+        ArrayList<IgasPlayingCard> cards = getCards();
 
         // flip all cards
-        cards.forEach(card -> {
-            card.flip();
+        for (int i = 0; i < cards.size(); i++) {
+            IgasPlayingCard card = cards.get(i);
+            card.postDelayed(card::flip, i * 25L);
             isFlipping = true;
+        }
 
-            card.postDelayed(() -> {
-                card.flip();
-                isFlipping = false;
-            }, 1500);
-        });
+        // wait 1.5 seconds
+        gridLayout.postDelayed(() -> {
+            // flip all cards back
+            for (int i = cards.size() - 1; i >= 0; i--) {
+                IgasPlayingCard card = cards.get(i);
+                card.postDelayed(card::flip, (cards.size() - i) * 25L);
+            }
+
+            isFlipping = false;
+        }, 2000L);
     }
 
     /*
@@ -147,8 +149,6 @@ public class GameTime extends AppCompatActivity {
             return;
         }
 
-        Toast.makeText(this, card.getName(), Toast.LENGTH_SHORT).show();
-
         // Add the clicked card to the list if it's not already in it
         if (clickedCards.size() <= 1) {
             clickedCards.add(card);
@@ -169,7 +169,6 @@ public class GameTime extends AppCompatActivity {
         // You have now clicked two cards that aren't the same at this point.
         // Check if the two clicked cards don't match
         if (!clickedCards.get(0).getName().equals(clickedCards.get(1).getName())) {
-            Toast.makeText(this, "No match!", Toast.LENGTH_SHORT).show();
             isFlipping = true;
 
             // Delay the cards from flipping back
@@ -182,21 +181,13 @@ public class GameTime extends AppCompatActivity {
             return;
         }
 
-        Toast.makeText(this, "Match!", Toast.LENGTH_SHORT).show();
-
         clickedCards.forEach(playingCard -> playingCard.setClickable(false));
         clickedCards.clear();
     }
 
     // Method to randomly select a name from the cardNames array
     private void giveNamesToCards() {
-        ArrayList<IgasPlayingCard> cards = new ArrayList<>();
-        for (int i = 0; i < gridLayout.getChildCount(); i++) {
-            View view = gridLayout.getChildAt(i);
-            if (view instanceof IgasPlayingCard card) {
-                cards.add(card);
-            }
-        }
+        ArrayList<IgasPlayingCard> cards = getCards();
 
         int nameIndex = 0;  // index of the current name in the sequence of pairs
         for (int i = 0; i < cards.size(); i += 2) {
@@ -204,13 +195,62 @@ public class GameTime extends AppCompatActivity {
             IgasPlayingCard card2 = cards.get(i + 1);
             String name = names[nameIndex];
             card1.setName(name);
+            card1.setFrontCard(name);
             card2.setName(name);
+            card2.setFrontCard(name);
             nameIndex = (nameIndex + 1) % names.length;  // move to the next name in the sequence
         }
     }
 
     public void onClickRestart(View view) {
-        recreate();
+        if (isRestarting || isFlipping) {
+            return;
+        }
+
+        isRestarting = true;
+
+        // get all cards from the grid layout and flip them to the back
+        ArrayList<IgasPlayingCard> cards = getCards();
+        cards.forEach(card -> {
+            if (!card.isFlipped()) {
+                return;
+            }
+
+            clickedCards.clear();
+            card.setClickable(true);
+            card.flip();
+        });
+
+        // calculate the center coordinates of the screen
+        int centerX = gridLayout.getWidth() / 2;
+        int centerY = gridLayout.getHeight() / 2;
+
+        view.postDelayed(() -> {
+            // animate each card to the center of the screen and back to its original position
+            for (int i = 0; i < cards.size(); i++) {
+                IgasPlayingCard card = cards.get(i);
+                card.animate()
+                        .translationX(centerX - card.getLeft() - card.getWidth() / 2)
+                        .translationY(centerY - card.getTop() - card.getHeight() / 2)
+                        .setStartDelay(i * 10L)
+                        .setDuration(500)
+                        .withEndAction(() -> {
+                            card.animate()
+                                    .translationX(0)
+                                    .translationY(0)
+                                    .setStartDelay(1000)
+                                    .setDuration(500)
+                                    .setInterpolator(new AccelerateDecelerateInterpolator())
+                                    .start();
+                        }).start();
+            }
+        }, 200);
+
+        view.postDelayed(() -> {
+            isRestarting = false;
+            shuffleGridLayout();
+            showCards();
+        }, 2500);
     }
 
     public void onHome(View view) {
