@@ -14,10 +14,10 @@
         android:theme="@style/Theme.MatchPairs"
         tools:targetApi="31">
         <activity
-            android:name=".ChooseDifficulty"
+            android:name=".activities.ChooseDifficulty"
             android:exported="false" />
         <activity
-            android:name=".HomePage"
+            android:name=".activities.HomePage"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -26,7 +26,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".GameTime"
+            android:name=".activities.GameTime"
             android:exported="false"></activity>
     </application>
 

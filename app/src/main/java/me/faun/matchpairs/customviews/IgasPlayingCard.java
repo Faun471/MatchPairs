@@ -3,7 +3,6 @@ package me.faun.matchpairs.customviews;
 import android.animation.*;
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.util.AttributeSet;
@@ -59,7 +58,6 @@ public class IgasPlayingCard extends AppCompatButton {
 
         setOnClickListener(view -> flip());
     }
-
 
     public void flip() {
         isFlipped = !isFlipped;

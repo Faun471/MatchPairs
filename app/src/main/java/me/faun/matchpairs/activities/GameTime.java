@@ -1,23 +1,33 @@
-package me.faun.matchpairs;
+package me.faun.matchpairs.activities;
 
+import android.app.AlertDialog;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.GridLayout;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import me.faun.matchpairs.R;
 import me.faun.matchpairs.customviews.IgasPlayingCard;
+import me.faun.matchpairs.managers.LeaderboardManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class GameTime extends AppCompatActivity {
     private final ArrayList<IgasPlayingCard> clickedCards = new ArrayList<>();
     private boolean isRestarting = false, isFlipping = false;
     private GridLayout gridLayout;
     private final String[] names = {"abigail", "harvey", "elliott"};
+    private LeaderboardManager leaderboardManager;
+    private long elapsedTime = 0;
+    private int clicks = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,6 +35,7 @@ public class GameTime extends AppCompatActivity {
         setContentView(R.layout.activity_game);
 
         gridLayout = findViewById(R.id.gridLayout);
+        leaderboardManager = new LeaderboardManager(this);
 
         addCardsToGrid(getIntent().getIntExtra("column", 3), getIntent().getIntExtra("row", 3));
 
@@ -32,6 +43,20 @@ public class GameTime extends AppCompatActivity {
             giveNamesToCards();
             shuffleGridLayout();
             showCards();
+            //start timer
+            new CountDownTimer(Long.MAX_VALUE, 1000) {
+
+                @Override
+                public void onTick(long millisUntilFinished) {
+                    elapsedTime += 1000;
+                }
+
+                @Override
+                public void onFinish() {
+                    // Do nothing
+                }
+
+            }.start();
         });
     }
 
@@ -120,13 +145,13 @@ public class GameTime extends AppCompatActivity {
             for (int i = 0; i < finalTotalCards; i++) {
                 IgasPlayingCard card = new IgasPlayingCard(this);
 
-                // Set the card's name, gravity, and background color
+                // Set the card's gravity, and background color
                 card.setGravity(Gravity.CENTER);
                 card.setBackgroundColor(Color.WHITE);
 
                 // Set the card's layout parameters with margins
                 GridLayout.LayoutParams params = new GridLayout.LayoutParams(new ViewGroup.LayoutParams(cellSize, cellSize));
-                params.setMargins(margin, margin, margin, margin);
+                params.setMargins(margin,  margin, margin, margin);
                 card.setLayoutParams(params);
 
                 // Add a click listener to the card
@@ -140,7 +165,7 @@ public class GameTime extends AppCompatActivity {
 
     public void onClick(View view) {
         //Check if view is being delayed
-        if (isFlipping) {
+        if (isFlipping || isRestarting) {
             return;
         }
 
@@ -148,6 +173,8 @@ public class GameTime extends AppCompatActivity {
         if (!(view instanceof IgasPlayingCard card)) {
             return;
         }
+
+        clicks++;
 
         // Add the clicked card to the list if it's not already in it
         if (clickedCards.size() <= 1) {
@@ -183,6 +210,11 @@ public class GameTime extends AppCompatActivity {
 
         clickedCards.forEach(playingCard -> playingCard.setClickable(false));
         clickedCards.clear();
+
+        // Check if all cards have been matched
+        if (getCards().stream().noneMatch(View::isClickable)) {
+            onGameComplete(calculateScore(elapsedTime, clicks, getCards().size()));
+        }
     }
 
     // Method to randomly select a name from the cardNames array
@@ -247,10 +279,49 @@ public class GameTime extends AppCompatActivity {
         }, 200);
 
         view.postDelayed(() -> {
+            isFlipping = false;
             isRestarting = false;
+            clicks = 0;
             shuffleGridLayout();
             showCards();
         }, 2500);
+    }
+
+    public void onGameComplete(long score) {
+        Toast.makeText(this, "Game Complete!", Toast.LENGTH_SHORT).show();
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        leaderboardManager.saveScore(score);
+
+        builder.setTitle("Game Complete!");
+        builder.setMessage("Your score is " + score + " points!" + "\n" + toHumanReadableList(leaderboardManager.getScores()));
+
+        builder.setPositiveButton("Play again?", (dialog, which) -> {
+            onClickRestart(findViewById(R.id.restart));
+        });
+
+        builder.setNegativeButton("Go back?", (dialog, which) -> {
+            finish();
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    public static String toHumanReadableList(List<Long> numbers) {
+        if (numbers == null || numbers.isEmpty()) {
+            return "";
+        }
+
+        return numbers.stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(", "));
+    }
+
+    public long calculateScore(long timeElapsed, int numClicks, int numCards) {
+        double timeFactor = Math.max(0, 1 - Math.log10(timeElapsed + 1) / Math.log10(180000)); // normalize timeElapsed to a value between 0 and 1
+        double clickFactor = Math.max(0, 1 - Math.log10(numClicks + 1) / Math.log10(100)); // normalize numClicks to a value between 0 and 1
+        double cardFactor = Math.max(0, 1 - Math.log10(numCards + 1) / Math.log10(50)); // normalize numCards to a value between 0 and 1
+        return Math.round((100 * timeFactor) + (100 * clickFactor) + ((100 * numCards) * cardFactor));
     }
 
     public void onHome(View view) {

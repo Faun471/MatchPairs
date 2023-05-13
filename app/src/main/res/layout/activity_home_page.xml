@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/background"
-    tools:context=".HomePage">
+    tools:context=".activities.HomePage">
 
     <ImageView
             android:id="@+id/play"
@@ -26,7 +26,7 @@
             app:srcCompat="@drawable/logo" app:layout_constraintBottom_toTopOf="@+id/play"/>
 
     <ImageView
-            android:id="@+id/settings"
+            android:id="@+id/settings" android:onClick="onSettings"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintEnd_toEndOf="parent"
@@ -43,7 +43,7 @@
             app:srcCompat="@drawable/quit" android:onClick="onQuit" app:layout_constraintBottom_toBottomOf="parent"
             android:layout_marginBottom="96dp"/>
     <ImageView
-            android:id="@+id/imageView9"
+            android:id="@+id/info"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_marginEnd="16dp"
@@ -51,5 +51,16 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:srcCompat="@drawable/info"/>
+
+    <FrameLayout
+            android:id="@+id/frameLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" android:layout_marginTop="64dp" android:layout_marginStart="64dp"
+            android:layout_marginBottom="64dp" app:layout_constraintHorizontal_bias="1.0"
+            android:layout_marginEnd="64dp" app:layout_constraintVertical_bias="0.0">
+
+    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

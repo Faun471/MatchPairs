@@ -1,4 +1,4 @@
-package me.faun.matchpairs;
+package me.faun.matchpairs.activities;
 
 import android.content.Intent;
 import android.widget.ImageView;
@@ -6,7 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.view.View;
-import androidx.core.content.res.ResourcesCompat;
+import me.faun.matchpairs.R;
 
 public class ChooseDifficulty extends AppCompatActivity {
 
