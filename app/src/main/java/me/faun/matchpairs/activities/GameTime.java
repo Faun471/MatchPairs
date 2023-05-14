@@ -297,5 +297,6 @@ public class GameTime extends AppCompatActivity {
         }
 
         MediaPlayerUtils.getInstance().playMusic(this, R.raw.game_music);
+        MediaPlayerUtils.getInstance().setLooping(true);
     }
 }
