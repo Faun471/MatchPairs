@@ -1,12 +1,9 @@
 package me.faun.matchpairs.activities;
 
 import android.app.AlertDialog;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.GridLayout;
 import android.widget.Toast;
@@ -14,17 +11,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import me.faun.matchpairs.R;
 import me.faun.matchpairs.customviews.IgasPlayingCard;
 import me.faun.matchpairs.managers.LeaderboardManager;
+import me.faun.matchpairs.utils.CardUtils;
+import me.faun.matchpairs.utils.MediaPlayerUtils;
+import me.faun.matchpairs.utils.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class GameTime extends AppCompatActivity {
     private final ArrayList<IgasPlayingCard> clickedCards = new ArrayList<>();
-    private boolean isRestarting = false, isFlipping = false;
+    private boolean isRestarting = true, isFlipping = true;
     private GridLayout gridLayout;
-    private final String[] names = {"abigail", "harvey", "elliott"};
+    private final String[] names = {"abigail", "harvey", "elliott", "linus", "wizard"};
     private LeaderboardManager leaderboardManager;
     private long elapsedTime = 0;
     private int clicks = 0;
@@ -34,13 +32,15 @@ public class GameTime extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
 
+        MediaPlayerUtils.getInstance().playMusic(this, R.raw.game_music);
+
         gridLayout = findViewById(R.id.gridLayout);
         leaderboardManager = new LeaderboardManager(this);
 
-        addCardsToGrid(getIntent().getIntExtra("column", 3), getIntent().getIntExtra("row", 3));
+        CardUtils.addCardsToGrid(this, gridLayout, this::onClick);
 
         gridLayout.post(() -> {
-            giveNamesToCards();
+            CardUtils.giveNamesToCards(getCards(), names);
             shuffleGridLayout();
             showCards();
             //start timer
@@ -87,7 +87,7 @@ public class GameTime extends AppCompatActivity {
     }
 
     /*
-     * This method will show all cards for 1.5 seconds.
+     * This method will show all cards for a short period of time.
      * During this time, the user can memorize the cards.
      * Additionally, the user will not be able to click on any card.
      * After that time, all cards will be flipped back.
@@ -100,67 +100,21 @@ public class GameTime extends AppCompatActivity {
         for (int i = 0; i < cards.size(); i++) {
             IgasPlayingCard card = cards.get(i);
             card.postDelayed(card::flip, i * 25L);
-            isFlipping = true;
         }
 
-        // wait 1.5 seconds
         gridLayout.postDelayed(() -> {
             // flip all cards back
             for (int i = cards.size() - 1; i >= 0; i--) {
                 IgasPlayingCard card = cards.get(i);
                 card.postDelayed(card::flip, (cards.size() - i) * 25L);
             }
+        }, 2000L + (cards.size() * 25L));
 
+        gridLayout.postDelayed(() -> {
+            // allow user to click on cards
             isFlipping = false;
-        }, 2000L);
-    }
-
-    /*
-     * This method will add cards to a grid layout.
-     * The number of cards added will be the number of columns times the number of rows.
-     */
-    public void addCardsToGrid(int columnCount, int rowCount) {
-        // Set the number of columns and rows
-        gridLayout.setColumnCount(columnCount);
-        gridLayout.setRowCount(rowCount);
-
-        // Calculate the total number of cards to be added
-        int totalCards = columnCount * rowCount;
-
-        // If total number of cards is odd, subtract one
-        if (totalCards % 2 != 0) {
-            totalCards -= 1;
-        }
-
-        // make sure that the code runs post layout
-        int finalTotalCards = totalCards;
-
-        gridLayout.post(() -> {
-            int width = gridLayout.getWidth() - gridLayout.getPaddingLeft() - gridLayout.getPaddingRight();
-            int height = gridLayout.getHeight() - gridLayout.getPaddingTop() - gridLayout.getPaddingBottom();
-            int margin = 8;
-            int cellSize = (Math.min(width / columnCount, height / rowCount) - 2 * margin);
-
-            // Add the cards to the grid
-            for (int i = 0; i < finalTotalCards; i++) {
-                IgasPlayingCard card = new IgasPlayingCard(this);
-
-                // Set the card's gravity, and background color
-                card.setGravity(Gravity.CENTER);
-                card.setBackgroundColor(Color.WHITE);
-
-                // Set the card's layout parameters with margins
-                GridLayout.LayoutParams params = new GridLayout.LayoutParams(new ViewGroup.LayoutParams(cellSize, cellSize));
-                params.setMargins(margin,  margin, margin, margin);
-                card.setLayoutParams(params);
-
-                // Add a click listener to the card
-                card.setOnClickListener(this::onClick);
-
-                // Add the card to the grid layout
-                gridLayout.addView(card);
-            }
-        });
+            isRestarting = false;
+        }, 2000L + (cards.size() * 25L) + 500L);
     }
 
     public void onClick(View view) {
@@ -217,28 +171,12 @@ public class GameTime extends AppCompatActivity {
         }
     }
 
-    // Method to randomly select a name from the cardNames array
-    private void giveNamesToCards() {
-        ArrayList<IgasPlayingCard> cards = getCards();
-
-        int nameIndex = 0;  // index of the current name in the sequence of pairs
-        for (int i = 0; i < cards.size(); i += 2) {
-            IgasPlayingCard card1 = cards.get(i);
-            IgasPlayingCard card2 = cards.get(i + 1);
-            String name = names[nameIndex];
-            card1.setName(name);
-            card1.setFrontCard(name);
-            card2.setName(name);
-            card2.setFrontCard(name);
-            nameIndex = (nameIndex + 1) % names.length;  // move to the next name in the sequence
-        }
-    }
-
     public void onClickRestart(View view) {
         if (isRestarting || isFlipping) {
             return;
         }
 
+        isFlipping = true;
         isRestarting = true;
 
         // get all cards from the grid layout and flip them to the back
@@ -279,9 +217,11 @@ public class GameTime extends AppCompatActivity {
         }, 200);
 
         view.postDelayed(() -> {
-            isFlipping = false;
-            isRestarting = false;
+            isFlipping = true;
+            isRestarting = true;
             clicks = 0;
+            elapsedTime = 0;
+            CardUtils.giveNamesToCards(getCards(), names);
             shuffleGridLayout();
             showCards();
         }, 2500);
@@ -293,7 +233,7 @@ public class GameTime extends AppCompatActivity {
         leaderboardManager.saveScore(score);
 
         builder.setTitle("Game Complete!");
-        builder.setMessage("Your score is " + score + " points!" + "\n" + toHumanReadableList(leaderboardManager.getScores()));
+        builder.setMessage("Your score is " + score + " points!" + "\n" + StringUtils.toHumanReadableList(leaderboardManager.getScores()));
 
         builder.setPositiveButton("Play again?", (dialog, which) -> {
             onClickRestart(findViewById(R.id.restart));
@@ -307,16 +247,6 @@ public class GameTime extends AppCompatActivity {
         dialog.show();
     }
 
-    public static String toHumanReadableList(List<Long> numbers) {
-        if (numbers == null || numbers.isEmpty()) {
-            return "";
-        }
-
-        return numbers.stream()
-                .map(Object::toString)
-                .collect(Collectors.joining(", "));
-    }
-
     public long calculateScore(long timeElapsed, int numClicks, int numCards) {
         double timeFactor = Math.max(0, 1 - Math.log10(timeElapsed + 1) / Math.log10(180000)); // normalize timeElapsed to a value between 0 and 1
         double clickFactor = Math.max(0, 1 - Math.log10(numClicks + 1) / Math.log10(100)); // normalize numClicks to a value between 0 and 1
@@ -326,5 +256,46 @@ public class GameTime extends AppCompatActivity {
 
     public void onHome(View view) {
         finish();
+    }
+
+    /*
+     * onPause() is called when the activity is going to the background.
+     *
+     * We want to pause the music when the activity is going to the background.
+     */
+    @Override
+    protected void onPause() {
+        MediaPlayerUtils.getInstance().pauseMusic();
+        super.onPause();
+    }
+
+    /*
+     * onDestroy() is called when the activity is being destroyed.
+     * This can happen when the activity is being finished or when the system is running low on memory.
+     *
+     * We want to stop the music when the activity is being destroyed.
+     */
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        MediaPlayerUtils.getInstance().stopMusic();
+    }
+
+    /*
+     * onResume() is called when the activity is coming back from the background.
+     *
+     * We want to resume the music when the activity is coming back from the background.
+     */
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        MediaPlayerUtils.getInstance().resumeMusic();
+
+        if (MediaPlayerUtils.getInstance().isPlaying()) {
+            return;
+        }
+
+        MediaPlayerUtils.getInstance().playMusic(this, R.raw.game_music);
     }
 }

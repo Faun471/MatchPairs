@@ -122,6 +122,8 @@ public class IgasPlayingCard extends AppCompatButton {
                     case "abigail" -> R.drawable.abigail;
                     case "harvey" -> R.drawable.harvey;
                     case "elliott" -> R.drawable.elliott;
+                    case "wizard" -> R.drawable.wizard;
+                    case "linus" -> R.drawable.linus;
                     default -> R.drawable.ic_launcher_foreground;
                 }, null);
     }
