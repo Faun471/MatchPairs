@@ -1,6 +1,7 @@
 package me.faun.matchpairs.activities;
 
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.ImageView;
@@ -10,6 +11,7 @@ import android.os.Bundle;
 import android.view.View;
 import me.faun.matchpairs.R;
 import me.faun.matchpairs.utils.MediaPlayerUtils;
+import me.faun.matchpairs.utils.ViewUtils;
 
 public class ChooseDifficulty extends AppCompatActivity {
     @Override
@@ -22,6 +24,9 @@ public class ChooseDifficulty extends AppCompatActivity {
         if (!(view instanceof ImageView level)) {
             return;
         }
+
+        MediaPlayer.create(this, R.raw.menu_click).start();
+        ViewUtils.animateBounce(view);
 
         Intent intent = new Intent(this, GameTime.class);
 

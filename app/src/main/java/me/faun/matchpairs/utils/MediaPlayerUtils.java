@@ -65,7 +65,6 @@ public class MediaPlayerUtils {
         return mediaPlayer.getDuration();
     }
 
-    //loop music
     public void setLooping(boolean looping) {
         mediaPlayer.setLooping(looping);
     }

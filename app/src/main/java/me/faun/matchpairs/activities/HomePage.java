@@ -1,13 +1,14 @@
 package me.faun.matchpairs.activities;
 
+import android.animation.AnimatorListenerAdapter;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentTransaction;
 import me.faun.matchpairs.R;
-import me.faun.matchpairs.SettingsFragment;
 import me.faun.matchpairs.utils.MediaPlayerUtils;
+import me.faun.matchpairs.utils.ViewUtils;
 
 public class HomePage extends AppCompatActivity {
 
@@ -18,20 +19,29 @@ public class HomePage extends AppCompatActivity {
     }
 
     public void onPlay(View view) {
-        Intent intent = new Intent(this, ChooseDifficulty.class);
-        startActivity(intent);
+        MediaPlayer.create(this, R.raw.menu_click).start();
+        ViewUtils.animateBounce(view, new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(android.animation.Animator animation) {
+                Intent intent = new Intent(HomePage.this, ChooseDifficulty.class);
+                startActivity(intent);
+            }
+        });
     }
 
     public void onQuit(View view) {
-        finish();
+        MediaPlayer.create(this, R.raw.menu_click).start();
+        ViewUtils.animateBounce(view, new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(android.animation.Animator animation) {
+                finish();
+            }
+        });
     }
 
     public void onSettings(View view) {
-        SettingsFragment menuFragment = new SettingsFragment();
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.add(R.id.frameLayout, menuFragment);
-        transaction.addToBackStack(null);
-        transaction.commit();
+        MediaPlayer.create(this, R.raw.menu_click).start();
+        ViewUtils.animateBounce(view);
     }
 
     /*

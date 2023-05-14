@@ -1,6 +1,9 @@
 package me.faun.matchpairs.activities;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.app.AlertDialog;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.view.View;
@@ -14,6 +17,7 @@ import me.faun.matchpairs.managers.LeaderboardManager;
 import me.faun.matchpairs.utils.CardUtils;
 import me.faun.matchpairs.utils.MediaPlayerUtils;
 import me.faun.matchpairs.utils.StringUtils;
+import me.faun.matchpairs.utils.ViewUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,7 +44,7 @@ public class GameTime extends AppCompatActivity {
         CardUtils.addCardsToGrid(this, gridLayout, this::onClick);
 
         gridLayout.post(() -> {
-            CardUtils.giveNamesToCards(getCards(), names);
+            CardUtils.giveNamesToCards(CardUtils.getCards(gridLayout), names);
             shuffleGridLayout();
             showCards();
             //start timer
@@ -60,25 +64,13 @@ public class GameTime extends AppCompatActivity {
         });
     }
 
-    private ArrayList<IgasPlayingCard> getCards() {
-        ArrayList<IgasPlayingCard> cards = new ArrayList<>();
-        for (int i = 0; i < gridLayout.getChildCount(); i++) {
-            View view = gridLayout.getChildAt(i);
-            if (view instanceof IgasPlayingCard card) {
-                cards.add(card);
-            }
-        }
-
-        return cards;
-    }
-
     /*
      * This will store all the cards in an ArrayList and shuffle it to change
      * the cards' order.
      */
     public void shuffleGridLayout() {
         // get all cards from the grid layout
-        ArrayList<IgasPlayingCard> cards = getCards();
+        ArrayList<IgasPlayingCard> cards = CardUtils.getCards(gridLayout);
         gridLayout.removeAllViews();
 
         Collections.shuffle(cards);
@@ -94,7 +86,7 @@ public class GameTime extends AppCompatActivity {
      */
     public void showCards() {
         // get all cards from the grid layout
-        ArrayList<IgasPlayingCard> cards = getCards();
+        ArrayList<IgasPlayingCard> cards = CardUtils.getCards(gridLayout);
 
         // flip all cards
         for (int i = 0; i < cards.size(); i++) {
@@ -134,6 +126,7 @@ public class GameTime extends AppCompatActivity {
         if (clickedCards.size() <= 1) {
             clickedCards.add(card);
             card.flip();
+            MediaPlayer.create(this, R.raw.card_click).start();
         }
 
         // Check if two cards have been clicked
@@ -144,6 +137,7 @@ public class GameTime extends AppCompatActivity {
         // Check if the same card has been clicked twice
         if (card.equals(clickedCards.get(0))) {
             clickedCards.clear();
+            MediaPlayer.create(this, R.raw.card_click_wrong).start();
             return;
         }
 
@@ -151,6 +145,7 @@ public class GameTime extends AppCompatActivity {
         // Check if the two clicked cards don't match
         if (!clickedCards.get(0).getName().equals(clickedCards.get(1).getName())) {
             isFlipping = true;
+            MediaPlayer.create(this, R.raw.card_click_wrong).start();
 
             // Delay the cards from flipping back
             view.postDelayed(() -> {
@@ -162,12 +157,13 @@ public class GameTime extends AppCompatActivity {
             return;
         }
 
+        MediaPlayer.create(this, R.raw.card_click_correct).start();
         clickedCards.forEach(playingCard -> playingCard.setClickable(false));
         clickedCards.clear();
 
         // Check if all cards have been matched
-        if (getCards().stream().noneMatch(View::isClickable)) {
-            onGameComplete(calculateScore(elapsedTime, clicks, getCards().size()));
+        if (CardUtils.getCards(gridLayout).stream().noneMatch(View::isClickable)) {
+            onGameComplete(calculateScore(elapsedTime, clicks, CardUtils.getCards(gridLayout).size()));
         }
     }
 
@@ -176,11 +172,14 @@ public class GameTime extends AppCompatActivity {
             return;
         }
 
+        MediaPlayer.create(this, R.raw.menu_click).start();
+        ViewUtils.animateBounce(view);
+
         isFlipping = true;
         isRestarting = true;
 
         // get all cards from the grid layout and flip them to the back
-        ArrayList<IgasPlayingCard> cards = getCards();
+        ArrayList<IgasPlayingCard> cards = CardUtils.getCards(gridLayout);
         cards.forEach(card -> {
             if (!card.isFlipped()) {
                 return;
@@ -221,7 +220,7 @@ public class GameTime extends AppCompatActivity {
             isRestarting = true;
             clicks = 0;
             elapsedTime = 0;
-            CardUtils.giveNamesToCards(getCards(), names);
+            CardUtils.giveNamesToCards(CardUtils.getCards(gridLayout), names);
             shuffleGridLayout();
             showCards();
         }, 2500);
@@ -255,7 +254,13 @@ public class GameTime extends AppCompatActivity {
     }
 
     public void onHome(View view) {
-        finish();
+        MediaPlayer.create(this, R.raw.menu_click).start();
+        ViewUtils.animateBounce(view, new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                finish();
+            }
+        });
     }
 
     /*

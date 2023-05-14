@@ -92,4 +92,16 @@ public class CardUtils {
             }
         });
     }
+
+    public static ArrayList<IgasPlayingCard> getCards(GridLayout gridLayout) {
+        ArrayList<IgasPlayingCard> cards = new ArrayList<>();
+        for (int i = 0; i < gridLayout.getChildCount(); i++) {
+        View view = gridLayout.getChildAt(i);
+        if (view instanceof IgasPlayingCard card) {
+            cards.add(card);
+        }
+    }
+
+        return cards;
+}
 }
