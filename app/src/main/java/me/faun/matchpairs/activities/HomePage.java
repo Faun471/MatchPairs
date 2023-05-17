@@ -1,14 +1,10 @@
 package me.faun.matchpairs.activities;
 
 import android.animation.AnimatorListenerAdapter;
-import android.app.Activity;
-import android.app.Application;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
-import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import me.faun.matchpairs.R;

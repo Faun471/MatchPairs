@@ -50,7 +50,7 @@
             android:layout_marginBottom="16dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:srcCompat="@drawable/info"/>
+            app:srcCompat="@drawable/info" android:visibility="1" tools:visibility="0"/>
 
     <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/settingsLayout"
