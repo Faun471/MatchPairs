@@ -1,17 +1,24 @@
 package me.faun.matchpairs.activities;
 
 import android.animation.AnimatorListenerAdapter;
+import android.app.Activity;
+import android.app.Application;
 import android.content.Intent;
-import android.media.MediaPlayer;
+import android.content.pm.ActivityInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import me.faun.matchpairs.R;
+import me.faun.matchpairs.fragments.Settings;
 import me.faun.matchpairs.utils.MediaPlayerUtils;
+import me.faun.matchpairs.utils.SettingsUtils;
 import me.faun.matchpairs.utils.ViewUtils;
 
 public class HomePage extends AppCompatActivity {
-
+    @RequiresApi(api = Build.VERSION_CODES.Q)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -19,7 +26,7 @@ public class HomePage extends AppCompatActivity {
     }
 
     public void onPlay(View view) {
-        MediaPlayer.create(this, R.raw.menu_click).start();
+        MediaPlayerUtils.playSoundEffect(this, R.raw.menu_click, SettingsUtils.getInstance(this).getSoundEffectsVolume());
         ViewUtils.animateBounce(view, new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(android.animation.Animator animation) {
@@ -30,18 +37,20 @@ public class HomePage extends AppCompatActivity {
     }
 
     public void onQuit(View view) {
-        MediaPlayer.create(this, R.raw.menu_click).start();
+        MediaPlayerUtils.playSoundEffect(this, R.raw.menu_click, SettingsUtils.getInstance(this).getSoundEffectsVolume());
         ViewUtils.animateBounce(view, new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(android.animation.Animator animation) {
-                finish();
+                finishAffinity();
             }
         });
     }
 
     public void onSettings(View view) {
-        MediaPlayer.create(this, R.raw.menu_click).start();
+        MediaPlayerUtils.playSoundEffect(this, R.raw.menu_click, SettingsUtils.getInstance(this).getSoundEffectsVolume());
         ViewUtils.animateBounce(view);
+
+        new Settings().show(getSupportFragmentManager(), "Settings");
     }
 
     /*
@@ -54,14 +63,14 @@ public class HomePage extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        MediaPlayerUtils.getInstance().resumeMusic();
+        MediaPlayerUtils.getInstance(this).resumeMusic();
 
-        if (MediaPlayerUtils.getInstance().isPlaying()) {
+        if (MediaPlayerUtils.getInstance(this).isPlaying()) {
             return;
         }
 
-        MediaPlayerUtils.getInstance().playMusic(this, R.raw.home_page_music);
-        MediaPlayerUtils.getInstance().setLooping(true);
+        MediaPlayerUtils.getInstance(this).playMusic(this, R.raw.home_page_music);
+        MediaPlayerUtils.getInstance(this).setLooping(true);
     }
 
     /*
@@ -72,6 +81,6 @@ public class HomePage extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        MediaPlayerUtils.getInstance().pauseMusic();
+        MediaPlayerUtils.getInstance(this).pauseMusic();
     }
 }

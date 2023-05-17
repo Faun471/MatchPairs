@@ -1,7 +1,6 @@
 package me.faun.matchpairs.activities;
 
 import android.content.Intent;
-import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.ImageView;
@@ -11,6 +10,7 @@ import android.os.Bundle;
 import android.view.View;
 import me.faun.matchpairs.R;
 import me.faun.matchpairs.utils.MediaPlayerUtils;
+import me.faun.matchpairs.utils.SettingsUtils;
 import me.faun.matchpairs.utils.ViewUtils;
 
 public class ChooseDifficulty extends AppCompatActivity {
@@ -25,7 +25,7 @@ public class ChooseDifficulty extends AppCompatActivity {
             return;
         }
 
-        MediaPlayer.create(this, R.raw.menu_click).start();
+        MediaPlayerUtils.playSoundEffect(this, R.raw.menu_click, SettingsUtils.getInstance(this).getSoundEffectsVolume());
         ViewUtils.animateBounce(view);
 
         Intent intent = new Intent(this, GameTime.class);
@@ -60,15 +60,15 @@ public class ChooseDifficulty extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        MediaPlayerUtils.getInstance().resumeMusic();
+        MediaPlayerUtils.getInstance(this).resumeMusic();
 
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            if (MediaPlayerUtils.getInstance().isPlaying()) {
+            if (MediaPlayerUtils.getInstance(this).isPlaying()) {
                 return;
             }
 
-            MediaPlayerUtils.getInstance().playMusic(this, R.raw.home_page_music);
-            MediaPlayerUtils.getInstance().setLooping(true);
+            MediaPlayerUtils.getInstance(this).playMusic(this, R.raw.home_page_music);
+            MediaPlayerUtils.getInstance(this).setLooping(true);
         }, 500);
     }
 
@@ -79,7 +79,14 @@ public class ChooseDifficulty extends AppCompatActivity {
      */
     @Override
     protected void onPause() {
-        MediaPlayerUtils.getInstance().pauseMusic();
+        MediaPlayerUtils.getInstance(this).pauseMusic();
         super.onPause();
+    }
+
+    public void onDifficultyHome(View view) {
+        MediaPlayerUtils.playSoundEffect(this, R.raw.menu_click, SettingsUtils.getInstance(this).getSoundEffectsVolume());
+        ViewUtils.animateBounce(view);
+
+        finish();
     }
 }

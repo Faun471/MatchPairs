@@ -43,5 +43,12 @@
             android:textSize="14sp" app:autoSizeTextType="uniform" app:autoSizeMinTextSize="14sp"
             app:autoSizeMaxTextSize="48sp"
             app:layout_constraintTop_toTopOf="parent" app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"/>
+            app:layout_constraintStart_toEndOf="@id/difficultyHome" android:layout_marginStart="96dp"
+            app:layout_constraintHorizontal_bias="1.0" android:layout_marginEnd="80dp"/>
+    <ImageView
+            android:layout_width="64dp" android:layout_height="64dp"
+            app:srcCompat="@drawable/home" android:id="@+id/difficultyHome"
+            app:layout_constraintTop_toTopOf="@+id/textView" android:onClick="onDifficultyHome"
+            app:layout_constraintBottom_toBottomOf="@+id/textView" app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="16dp"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

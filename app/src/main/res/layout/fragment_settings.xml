@@ -1,25 +1,125 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                                                   xmlns:app="http://schemas.android.com/apk/res-auto"
-                                                   xmlns:tools="http://schemas.android.com/tools"
-                                                   android:layout_width="match_parent"
-                                                   android:layout_height="match_parent"
-                                                   tools:context=".SettingsFragment"
-                                                   android:background="#FFFFFF">
+<androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:background="@drawable/paper" tools:context=".fragments.Settings" android:minWidth="256dp"
+        android:minHeight="256dp">
 
     <!-- TODO: Update blank fragment layout -->
+
     <SeekBar
-            android:layout_width="0dp"
-            android:layout_height="wrap_content" android:id="@+id/seekBar"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent"
+            android:id="@+id/music_volume"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="10" android:progress="5"
+            android:thumbTint="#FFFFFF" android:theme="@style/SeekBarColor"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" android:layout_marginStart="72dp"
+            android:layout_marginEnd="72dp"
+            app:layout_constraintTop_toBottomOf="@+id/music_volume_text" android:layout_marginTop="4dp"/>
+    <SeekBar
+            android:id="@+id/sfx_volume"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="10" android:progress="5"
+            android:thumbTint="#FFFFFF" android:theme="@style/SeekBarColor"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" android:layout_marginStart="72dp"
+            android:layout_marginEnd="72dp"
+            app:layout_constraintTop_toBottomOf="@+id/sfx_volume_text"
+            android:layout_marginTop="4dp"
+            style="@style/Widget.AppCompat.SeekBar"/>
+    <ImageView
+            android:layout_width="32dp"
+            android:layout_height="match_parent"
+            android:src="@drawable/border_left" android:id="@+id/borderLeft"
+            android:scaleType="fitXY"
+            app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"/>
+    <ImageView
+            android:layout_width="32dp"
+            android:layout_height="match_parent"
+            android:src="@drawable/border_left" android:id="@+id/borderRight"
+            android:scaleType="fitXY"
+            android:rotation="180"
+            tools:layout_editor_absoluteY="16dp" app:layout_constraintEnd_toEndOf="parent"/>
+    <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:src="@drawable/border_top" android:id="@+id/borderTop"
+            android:scaleType="fitXY"
+            app:layout_constraintTop_toTopOf="parent" app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"/>
+    <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:src="@drawable/border_top" android:id="@+id/borderTop2"
+            android:scaleType="fitXY"
+            android:rotation="180" app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"/>
+    <Button
+            android:text="Go Back" android:id="@+id/save" android:fontFamily="@font/strawberry_days"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" android:layout_marginBottom="48dp"
+            app:layout_constraintTop_toBottomOf="@+id/sfx_volume" android:layout_marginTop="24dp"
+            app:icon="@drawable/home_isa_pa" app:backgroundTint="#bc7a33" app:cornerRadius="16dp"/>
     <TextView
-            android:text="TextView"
+            android:text="SETTINGS"
+            android:fontFamily="@font/strawberry_days" android:textColor="#b04d0c"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:id="@+id/textView2" android:textSize="36sp"
+            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/borderTop" android:layout_marginTop="48dp"
+    />
+    <TextView
+            android:text="Music Volume:"
+            android:fontFamily="@font/strawberry_days" android:textColor="#FFFFFF"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:id="@+id/music_volume_text" android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="@+id/music_volume"
+            app:layout_constraintStart_toStartOf="@+id/music_volume"
+            app:layout_constraintHorizontal_bias="0.462"
+            android:layout_marginTop="16dp" app:layout_constraintTop_toBottomOf="@+id/textView2"/>
+    <TextView
+            android:text="Sound Effects Volume:"
+            android:fontFamily="@font/strawberry_days" android:textColor="#FFFFFF"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:id="@+id/sfx_volume_text" android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="@+id/sfx_volume"
+            app:layout_constraintTop_toBottomOf="@+id/music_volume" android:layout_marginTop="16dp"
+            app:layout_constraintStart_toStartOf="@+id/sfx_volume"/>
+    <ImageView
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:id="@+id/leaderboards"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent" android:layout_marginTop="148dp"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            android:layout_height="wrap_content"
+            android:src="@drawable/add" android:id="@+id/add_volume_music"
+            app:layout_constraintTop_toTopOf="@+id/music_volume"
+            app:layout_constraintBottom_toBottomOf="@+id/music_volume"
+            app:layout_constraintStart_toEndOf="@+id/music_volume" android:layout_marginStart="8dp"
+            app:tint="#704933"/>
+    <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/add" android:id="@+id/add_volume_sfx"
+            app:tint="#704933"
+            app:layout_constraintBottom_toBottomOf="@+id/sfx_volume"
+            app:layout_constraintTop_toTopOf="@+id/sfx_volume" android:layout_marginStart="8dp"
+            app:layout_constraintStart_toEndOf="@+id/sfx_volume"/>
+    <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/subtract" android:id="@+id/subtract_volume_music"
+            app:layout_constraintTop_toTopOf="@+id/music_volume"
+            app:layout_constraintBottom_toBottomOf="@+id/music_volume" app:tint="#704933"
+            app:layout_constraintEnd_toStartOf="@+id/music_volume" android:layout_marginEnd="8dp"/>
+    <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/subtract" android:id="@+id/subtract_volume_sfx"
+            app:tint="#704933"
+            app:layout_constraintTop_toTopOf="@+id/sfx_volume"
+            app:layout_constraintBottom_toBottomOf="@+id/sfx_volume"
+            app:layout_constraintEnd_toStartOf="@+id/sfx_volume" android:layout_marginEnd="8dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

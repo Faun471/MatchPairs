@@ -4,21 +4,25 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.AlertDialog;
 import android.media.MediaPlayer;
+import android.media.PlaybackParams;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.GridLayout;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 import me.faun.matchpairs.R;
 import me.faun.matchpairs.customviews.IgasPlayingCard;
+import me.faun.matchpairs.fragments.Settings;
 import me.faun.matchpairs.managers.LeaderboardManager;
-import me.faun.matchpairs.utils.CardUtils;
-import me.faun.matchpairs.utils.MediaPlayerUtils;
-import me.faun.matchpairs.utils.StringUtils;
-import me.faun.matchpairs.utils.ViewUtils;
+import me.faun.matchpairs.utils.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -36,7 +40,7 @@ public class GameTime extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
 
-        MediaPlayerUtils.getInstance().playMusic(this, R.raw.game_music);
+        MediaPlayerUtils.getInstance(this).playMusic(this, R.raw.game_music);
 
         gridLayout = findViewById(R.id.gridLayout);
         leaderboardManager = new LeaderboardManager(this);
@@ -91,22 +95,51 @@ public class GameTime extends AppCompatActivity {
         // flip all cards
         for (int i = 0; i < cards.size(); i++) {
             IgasPlayingCard card = cards.get(i);
-            card.postDelayed(card::flip, i * 25L);
+            MediaPlayer mediaPlayer = new MediaPlayer();
+            int finalI = i;
+            card.postDelayed(() -> {
+                playSound(mediaPlayer, new PlaybackParams(), finalI);
+
+                card.flip();
+            }, i  + 5 * 25L);
         }
 
         gridLayout.postDelayed(() -> {
             // flip all cards back
             for (int i = cards.size() - 1; i >= 0; i--) {
                 IgasPlayingCard card = cards.get(i);
-                card.postDelayed(card::flip, (cards.size() - i) * 25L);
+                MediaPlayer mediaPlayer = new MediaPlayer();
+                int finalI = i;
+                card.postDelayed(() -> {
+                    playSound(mediaPlayer, new PlaybackParams(), finalI);
+                    card.flip();
+                }, (cards.size() - i) * 25L);
+                isFlipping = true;
             }
-        }, 2000L + (cards.size() * 25L));
 
-        gridLayout.postDelayed(() -> {
-            // allow user to click on cards
-            isFlipping = false;
-            isRestarting = false;
-        }, 2000L + (cards.size() * 25L) + 500L);
+            gridLayout.postDelayed(() -> {
+                // allow user to click on cards
+                isFlipping = false;
+                isRestarting = false;
+            }, Math.max(cards.size() * 25L, 400L));
+        }, 2000L + (cards.size() * 25L));
+    }
+
+    private void playSound(MediaPlayer mediaPlayer, PlaybackParams params, int pitch) {
+        try {
+            mediaPlayer.setVolume(SettingsUtils.getInstance(getApplicationContext()).getSoundEffectsVolume(), SettingsUtils.getInstance(getApplicationContext()).getSoundEffectsVolume());
+            mediaPlayer.setDataSource(this, Uri.parse("android.resource://" + this.getPackageName() + "/" + R.raw.confirm));
+            mediaPlayer.setOnCompletionListener(MediaPlayer::release);
+            mediaPlayer.prepare();
+
+            params.setPitch(pitch * 0.1f + 1.0f);
+            mediaPlayer.setPlaybackParams(params);
+
+            mediaPlayer.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     public void onClick(View view) {
@@ -126,7 +159,7 @@ public class GameTime extends AppCompatActivity {
         if (clickedCards.size() <= 1) {
             clickedCards.add(card);
             card.flip();
-            MediaPlayer.create(this, R.raw.card_click).start();
+            MediaPlayerUtils.playSoundEffect(this, R.raw.card_click, SettingsUtils.getInstance(this).getSoundEffectsVolume());
         }
 
         // Check if two cards have been clicked
@@ -137,7 +170,7 @@ public class GameTime extends AppCompatActivity {
         // Check if the same card has been clicked twice
         if (card.equals(clickedCards.get(0))) {
             clickedCards.clear();
-            MediaPlayer.create(this, R.raw.card_click_wrong).start();
+            MediaPlayerUtils.playSoundEffect(this, R.raw.card_click_wrong, SettingsUtils.getInstance(this).getSoundEffectsVolume());
             return;
         }
 
@@ -145,7 +178,7 @@ public class GameTime extends AppCompatActivity {
         // Check if the two clicked cards don't match
         if (!clickedCards.get(0).getName().equals(clickedCards.get(1).getName())) {
             isFlipping = true;
-            MediaPlayer.create(this, R.raw.card_click_wrong).start();
+            MediaPlayerUtils.playSoundEffect(this, R.raw.card_click_wrong, SettingsUtils.getInstance(this).getSoundEffectsVolume());
 
             // Delay the cards from flipping back
             view.postDelayed(() -> {
@@ -157,7 +190,7 @@ public class GameTime extends AppCompatActivity {
             return;
         }
 
-        MediaPlayer.create(this, R.raw.card_click_correct).start();
+        MediaPlayerUtils.playSoundEffect(this, R.raw.card_click_correct, SettingsUtils.getInstance(this).getSoundEffectsVolume());
         clickedCards.forEach(playingCard -> playingCard.setClickable(false));
         clickedCards.clear();
 
@@ -172,7 +205,7 @@ public class GameTime extends AppCompatActivity {
             return;
         }
 
-        MediaPlayer.create(this, R.raw.menu_click).start();
+        MediaPlayerUtils.playSoundEffect(this, R.raw.menu_click, SettingsUtils.getInstance(this).getSoundEffectsVolume());
         ViewUtils.animateBounce(view);
 
         isFlipping = true;
@@ -199,19 +232,17 @@ public class GameTime extends AppCompatActivity {
             for (int i = 0; i < cards.size(); i++) {
                 IgasPlayingCard card = cards.get(i);
                 card.animate()
-                        .translationX(centerX - card.getLeft() - card.getWidth() / 2)
-                        .translationY(centerY - card.getTop() - card.getHeight() / 2)
+                        .translationX(centerX - card.getLeft() - (float) (card.getWidth() / 2))
+                        .translationY(centerY - card.getTop() - (float) (card.getHeight() / 2))
                         .setStartDelay(i * 10L)
                         .setDuration(500)
-                        .withEndAction(() -> {
-                            card.animate()
-                                    .translationX(0)
-                                    .translationY(0)
-                                    .setStartDelay(1000)
-                                    .setDuration(500)
-                                    .setInterpolator(new AccelerateDecelerateInterpolator())
-                                    .start();
-                        }).start();
+                        .withEndAction(() -> card.animate()
+                                .translationX(0)
+                                .translationY(0)
+                                .setStartDelay(1000)
+                                .setDuration(500)
+                                .setInterpolator(new AccelerateDecelerateInterpolator())
+                                .start()).start();
             }
         }, 200);
 
@@ -232,29 +263,24 @@ public class GameTime extends AppCompatActivity {
         leaderboardManager.saveScore(score);
 
         builder.setTitle("Game Complete!");
-        builder.setMessage("Your score is " + score + " points!" + "\n" + StringUtils.toHumanReadableList(leaderboardManager.getScores()));
+        builder.setMessage("You've scored  " + score + " points!" + "\n");
 
-        builder.setPositiveButton("Play again?", (dialog, which) -> {
-            onClickRestart(findViewById(R.id.restart));
-        });
-
-        builder.setNegativeButton("Go back?", (dialog, which) -> {
-            finish();
-        });
+        builder.setPositiveButton("Play again?", (dialog, which) -> onClickRestart(findViewById(R.id.restart)));
+        builder.setNegativeButton("Back to Choose Difficulty", (dialog, which) -> finish());
 
         AlertDialog dialog = builder.create();
         dialog.show();
     }
 
-    public long calculateScore(long timeElapsed, int numClicks, int numCards) {
-        double timeFactor = Math.max(0, 1 - Math.log10(timeElapsed + 1) / Math.log10(180000)); // normalize timeElapsed to a value between 0 and 1
-        double clickFactor = Math.max(0, 1 - Math.log10(numClicks + 1) / Math.log10(100)); // normalize numClicks to a value between 0 and 1
+    public long calculateScore(long elapsedTime, int clicks, int numCards) {
+        double timeFactor = Math.max(0, 1 - Math.log10(elapsedTime + 1) / Math.log10(180000)); // normalize elapsedTime to a value between 0 and 1
+        double clickFactor = Math.max(0, 1 - Math.log10(clicks + 1) / Math.log10(100)); // normalize clicks to a value between 0 and 1
         double cardFactor = Math.max(0, 1 - Math.log10(numCards + 1) / Math.log10(50)); // normalize numCards to a value between 0 and 1
         return Math.round((100 * timeFactor) + (100 * clickFactor) + ((100 * numCards) * cardFactor));
     }
 
     public void onHome(View view) {
-        MediaPlayer.create(this, R.raw.menu_click).start();
+        MediaPlayerUtils.playSoundEffect(this, R.raw.menu_click, SettingsUtils.getInstance(this).getSoundEffectsVolume());
         ViewUtils.animateBounce(view, new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
@@ -270,7 +296,7 @@ public class GameTime extends AppCompatActivity {
      */
     @Override
     protected void onPause() {
-        MediaPlayerUtils.getInstance().pauseMusic();
+        MediaPlayerUtils.getInstance(this).pauseMusic();
         super.onPause();
     }
 
@@ -283,7 +309,7 @@ public class GameTime extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        MediaPlayerUtils.getInstance().stopMusic();
+        MediaPlayerUtils.getInstance(this).stopMusic();
     }
 
     /*
@@ -295,13 +321,20 @@ public class GameTime extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        MediaPlayerUtils.getInstance().resumeMusic();
+        MediaPlayerUtils.getInstance(this).resumeMusic();
 
-        if (MediaPlayerUtils.getInstance().isPlaying()) {
+        if (MediaPlayerUtils.getInstance(this).isPlaying()) {
             return;
         }
 
-        MediaPlayerUtils.getInstance().playMusic(this, R.raw.game_music);
-        MediaPlayerUtils.getInstance().setLooping(true);
+        MediaPlayerUtils.getInstance(this).playMusic(this, R.raw.game_music);
+        MediaPlayerUtils.getInstance(this).setLooping(true);
+    }
+
+    public void onClickSettings(View view) {
+        MediaPlayerUtils.playSoundEffect(this, R.raw.menu_click, SettingsUtils.getInstance(this).getSoundEffectsVolume());
+        ViewUtils.animateBounce(view);
+
+        new Settings().show(getSupportFragmentManager(), "Settings");
     }
 }

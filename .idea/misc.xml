@@ -3,11 +3,18 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/IdeaProjects/MatchPairs/app/src/main/res/drawable/add.xml" value="0.17" />
+        <entry key="..\:/IdeaProjects/MatchPairs/app/src/main/res/drawable/border.xml" value="0.211" />
+        <entry key="..\:/IdeaProjects/MatchPairs/app/src/main/res/drawable/dialog_border.xml" value="0.5" />
+        <entry key="..\:/IdeaProjects/MatchPairs/app/src/main/res/drawable/restart.xml" value="0.2045" />
+        <entry key="..\:/IdeaProjects/MatchPairs/app/src/main/res/drawable/settings.xml" value="0.212" />
+        <entry key="..\:/IdeaProjects/MatchPairs/app/src/main/res/drawable/subtract.xml" value="0.17" />
         <entry key="..\:/IdeaProjects/MatchPairs/app/src/main/res/layout/activity_choose_difficulty.xml" value="0.25" />
-        <entry key="..\:/IdeaProjects/MatchPairs/app/src/main/res/layout/activity_game.xml" value="0.22" />
-        <entry key="..\:/IdeaProjects/MatchPairs/app/src/main/res/layout/activity_home_page.xml" value="0.2" />
+        <entry key="..\:/IdeaProjects/MatchPairs/app/src/main/res/layout/activity_game.xml" value="0.33" />
+        <entry key="..\:/IdeaProjects/MatchPairs/app/src/main/res/layout/activity_home_page.xml" value="0.1" />
         <entry key="..\:/IdeaProjects/MatchPairs/app/src/main/res/layout/activity_main.xml" value="0.5" />
-        <entry key="..\:/IdeaProjects/MatchPairs/app/src/main/res/layout/fragment_settings.xml" value="0.25" />
+        <entry key="..\:/IdeaProjects/MatchPairs/app/src/main/res/layout/fragment_leaderboards_list.xml" value="0.22" />
+        <entry key="..\:/IdeaProjects/MatchPairs/app/src/main/res/layout/fragment_settings.xml" value="0.22" />
         <entry key="..\:/IdeaProjects/MatchPairs/app/src/main/res/xml/root_preferences.xml" value="0.2046875" />
         <entry key="..\:/Users/C3-31/Downloads/MatchPairs-main/app/src/main/res/drawable/home.xml" value="0.1945" />
         <entry key="..\:/Users/C3-31/Downloads/MatchPairs-main/app/src/main/res/drawable/restart.xml" value="0.163" />
